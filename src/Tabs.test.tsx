@@ -1,4 +1,4 @@
-import {act, fireEvent, render, screen} from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import { Tabs } from "./Tabs";
@@ -28,80 +28,110 @@ describe("tabs", () => {
       expect(results).toHaveNoViolations();
     });
   });
-  it("renders a single tab", () => {
-    render(
-      <Tabs
-        items={[
-          {
-            label: "Tab 1",
-            content: {
-              heading: "This is a heading",
+
+  describe("basic usage", () => {
+    it("renders a single tab", () => {
+      render(
+        <Tabs
+          items={[
+            {
+              label: "Tab 1",
+              content: {
+                heading: "This is a heading",
+              },
             },
+          ]}
+        />
+      );
+
+      expect(screen.getByRole("tablist")).toBeInTheDocument();
+
+      const tab = screen.getByRole("tab");
+      expect(tab).toBeInTheDocument();
+      expect(tab).toHaveTextContent("Tab 1");
+
+      const panel = screen.getByRole("tabpanel");
+      expect(panel).toBeInTheDocument();
+      expect(panel).toHaveTextContent("This is a heading");
+    });
+
+    it("renders multiple tabs", () => {
+      const items = [
+        {
+          label: "Tab 1",
+          content: {
+            heading: "This is a heading",
           },
-        ]}
-      />
-    );
+        },
+        {
+          label: "Tab 2",
+          content: {
+            heading: "This is a heading for tab 2",
+          },
+        },
+      ];
 
-    expect(screen.getByRole("tablist")).toBeInTheDocument();
+      render(<Tabs items={items} />);
 
-    const tab = screen.getByRole("tab");
-    expect(tab).toBeInTheDocument();
-    expect(tab).toHaveTextContent("Tab 1");
+      expect(screen.getByRole("tablist")).toBeInTheDocument();
 
-    const panel = screen.getByRole("tabpanel");
-    expect(panel).toBeInTheDocument();
-    expect(panel).toHaveTextContent("This is a heading");
+      const tabs = screen.getAllByRole("tab");
+      expect(tabs).toHaveLength(2);
+    });
+
+    it("click tab to switch to another", () => {
+      const items = [
+        {
+          label: "Tab 1",
+          content: {
+            heading: "This is a heading",
+          },
+        },
+        {
+          label: "Tab 2",
+          content: {
+            heading: "This is a heading for tab 2",
+          },
+        },
+      ];
+
+      render(<Tabs items={items} />);
+
+      const tab2 = screen.getByRole("tab", { name: "Tab 2" });
+      expect(tab2).toBeInTheDocument();
+
+      userEvent.click(tab2);
+      expect(
+        screen.getByText("This is a heading for tab 2")
+      ).toBeInTheDocument();
+    });
   });
 
-  it("renders multiple tabs", () => {
-    const items = [
-      {
-        label: "Tab 1",
-        content: {
-          heading: "This is a heading",
-        },
-      },
-      {
-        label: "Tab 2",
-        content: {
-          heading: "This is a heading for tab 2",
-        },
-      },
-    ];
+  describe('customise tab panel', () => {
+    it("renders a single tab with customised panel", () => {
+      render(
+        <Tabs
+          items={[
+            {
+              label: "Tab 1",
+              content: <div>
+                <h1>This is a <i>fancy</i> panel</h1>
+                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Impedit, molestiae!</p>
+              </div>,
+            },
+          ]}
+        />
+      );
 
-    render(<Tabs items={items} />);
+      const tab = screen.getByRole("tab");
+      expect(tab).toBeInTheDocument();
+      expect(tab).toHaveTextContent("Tab 1");
 
-    expect(screen.getByRole("tablist")).toBeInTheDocument();
-
-    const tabs = screen.getAllByRole("tab");
-    expect(tabs).toHaveLength(2);
-  });
-
-  it("click tab to switch to another", () => {
-    const items = [
-      {
-        label: "Tab 1",
-        content: {
-          heading: "This is a heading",
-        },
-      },
-      {
-        label: "Tab 2",
-        content: {
-          heading: "This is a heading for tab 2",
-        },
-      },
-    ];
-
-    render(<Tabs items={items} />);
-
-    const tab2 = screen.getByRole("tab", { name: "Tab 2" });
-    expect(tab2).toBeInTheDocument();
-
-    userEvent.click(tab2);
-    expect(screen.getByText("This is a heading for tab 2")).toBeInTheDocument();
-  });
-
+      const panel = screen.getByRole("tabpanel");
+      expect(panel).toBeInTheDocument();
+      expect(panel).toHaveTextContent("This is a fancy panel");
+    });
+  })
   describe("keyboard navigation", () => {
     const items = [
       {
@@ -128,13 +158,11 @@ describe("tabs", () => {
         tab1.focus();
       });
 
-      fireEvent.keyDown(tab1, { key: 'ArrowRight' });
+      fireEvent.keyDown(tab1, { key: "ArrowRight" });
 
       expect(tab2).toHaveFocus();
 
-      expect(
-        screen.getByText("This is a heading for tab 2")
-      ).toBeVisible();
+      expect(screen.getByText("This is a heading for tab 2")).toBeVisible();
     });
 
     it("rotate to the previous one when reached to last one", () => {
@@ -143,19 +171,16 @@ describe("tabs", () => {
       const tab1 = screen.getByRole("tab", { name: "Tab 1" });
       const tab2 = screen.getByRole("tab", { name: "Tab 2" });
 
-
       act(() => {
         tab2.focus();
         tab2.click();
       });
 
-      fireEvent.keyDown(tab2, { key: 'ArrowRight' });
+      fireEvent.keyDown(tab2, { key: "ArrowRight" });
 
       expect(tab1).toHaveFocus();
 
-      expect(
-        screen.getByText("This is a heading for tab 1")
-      ).toBeVisible();
+      expect(screen.getByText("This is a heading for tab 1")).toBeVisible();
     });
 
     it("navigates by keyboard - arrow left", () => {
@@ -168,12 +193,10 @@ describe("tabs", () => {
         tab1.focus();
       });
 
-      fireEvent.keyDown(tab1, { key: 'ArrowLeft' });
+      fireEvent.keyDown(tab1, { key: "ArrowLeft" });
 
       expect(tab2).toHaveFocus();
-      expect(
-        screen.getByText("This is a heading for tab 2")
-      ).toBeVisible();
+      expect(screen.getByText("This is a heading for tab 2")).toBeVisible();
     });
   });
 });

@@ -43,7 +43,7 @@ export function Tabs({ items }: TabsProps) {
             tabIndex={selectedIndex === index ? 0 : -1}
             hidden={index !== selectedIndex}
           >
-            {item.content.heading}
+            {'heading' in item.content ? item.content.heading : item.content}
           </div>
         );
       })}
