@@ -1,9 +1,33 @@
-import { render, screen } from "@testing-library/react";
+import {act, fireEvent, render, screen} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import { Tabs } from "./Tabs";
 
+import { axe, toHaveNoViolations } from "jest-axe";
+
+expect.extend(toHaveNoViolations);
+
 describe("tabs", () => {
+  describe("a11y", () => {
+    it("should demonstrate this matcher`s usage with react testing library", async () => {
+      const { container } = render(
+        <Tabs
+          items={[
+            {
+              label: "Tab 1",
+              content: {
+                heading: "This is a heading",
+              },
+            },
+          ]}
+        />
+      );
+
+      const results = await axe(container);
+
+      expect(results).toHaveNoViolations();
+    });
+  });
   it("renders a single tab", () => {
     render(
       <Tabs
@@ -96,43 +120,60 @@ describe("tabs", () => {
 
     it("navigates by keyboard - arrow right", () => {
       render(<Tabs items={items} />);
-      const tablist = screen.getByRole("tablist");
 
       const tab1 = screen.getByRole("tab", { name: "Tab 1" });
+      const tab2 = screen.getByRole("tab", { name: "Tab 2" });
 
-      userEvent.click(tab1);
-      expect(tab1).toHaveFocus();
+      act(() => {
+        tab1.focus();
+      });
 
-      userEvent.type(tablist, "{arrowright}");
-      expect(screen.getByText('This is a heading for tab 2')).toBeInTheDocument();
+      fireEvent.keyDown(tab1, { key: 'ArrowRight' });
+
+      expect(tab2).toHaveFocus();
+
+      expect(
+        screen.getByText("This is a heading for tab 2")
+      ).toBeVisible();
     });
 
     it("rotate to the previous one when reached to last one", () => {
       render(<Tabs items={items} />);
-      const tablist = screen.getByRole("tablist");
 
       const tab1 = screen.getByRole("tab", { name: "Tab 1" });
+      const tab2 = screen.getByRole("tab", { name: "Tab 2" });
 
-      userEvent.click(tab1);
+
+      act(() => {
+        tab2.focus();
+        tab2.click();
+      });
+
+      fireEvent.keyDown(tab2, { key: 'ArrowRight' });
+
       expect(tab1).toHaveFocus();
 
-      userEvent.type(tablist, "{arrowright}");
-      expect(screen.getByText('This is a heading for tab 2')).toBeInTheDocument();
-
-      userEvent.type(tablist, "{arrowright}");
-      expect(screen.getByText('This is a heading for tab 1')).toBeInTheDocument();
+      expect(
+        screen.getByText("This is a heading for tab 1")
+      ).toBeVisible();
     });
 
     it("navigates by keyboard - arrow left", () => {
       render(<Tabs items={items} />);
-      const tablist = screen.getByRole("tablist");
 
       const tab1 = screen.getByRole("tab", { name: "Tab 1" });
-      userEvent.click(tab1);
-      expect(tab1).toHaveFocus();
+      const tab2 = screen.getByRole("tab", { name: "Tab 2" });
 
-      userEvent.type(tablist, "{arrowleft}");
-      expect(screen.getByText('This is a heading for tab 2')).toBeInTheDocument();
+      act(() => {
+        tab1.focus();
+      });
+
+      fireEvent.keyDown(tab1, { key: 'ArrowLeft' });
+
+      expect(tab2).toHaveFocus();
+      expect(
+        screen.getByText("This is a heading for tab 2")
+      ).toBeVisible();
     });
   });
 });
