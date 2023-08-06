@@ -1,0 +1,17 @@
+[role="tablist"] {
+  display: flex;
+  gap: 1rem;
+}
+
+[role="tablist"] > [role="tab"] {
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+[role="tablist"] > [role="tab"][aria-selected="true"] {
+  border-bottom: 2px solid #61dafb;
+}
+
+[role="tablist"] > [role="tab"][aria-selected="true"] {
+  color: #61dafb;
+}
